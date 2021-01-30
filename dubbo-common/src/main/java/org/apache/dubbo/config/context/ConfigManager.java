@@ -60,7 +60,9 @@ import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
-
+/**
+ * 配置类（ApplicationConfig、ProviderConfig等）管理类
+ */
 public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
@@ -68,7 +70,21 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     public static final String NAME = "config";
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
+    /**
+     * "Config", "Bean", "ConfigBase"
+     *  配置类一般为XxxYyyConfig，即以Config结尾
+     *
+     *  configsCache#key 生成规则：先去掉结尾的Config，然后驼峰 -转换
+     *  比如ApplicationConfig 对应的key为 application
+     *      ConfigCenterConfig 对应的key为 config-center
+     *
+     *  configsCache#value 生成规则：Map<String, AbstractConfig>
+     *      key:如果对应的配置类设置了id（@see AbstractConfig .id ）,则为此id；
+     *          如果没有设置id，则为配置类的simpleClassName+default，除非设置此配置类为非默认（isDefault=false,默认和缺省时都是true）
+     *          比如ProviderConfig默认对应的key为ProviderConfig#default
+     *      value:配置类实例
+     *
+     */
     final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
     public ConfigManager() {
